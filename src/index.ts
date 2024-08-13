@@ -31,7 +31,7 @@ const generateAST =  (input: InputType) => {
         t.tsInterfaceBody([
             t.tsPropertySignature(
                 t.identifier("request"),
-                t.tsTypeAnnotation(t.tsTypeReference(t.identifier(`Query${key}Request`))),
+                t.tsTypeAnnotation(t.tsTypeReference(t.identifier(requestType))),
             )
     
         ]),
@@ -66,7 +66,7 @@ const generateAST =  (input: InputType) => {
         t.returnStatement(
             t.callExpression(t.identifier("useQuery"), [
                 t.arrayExpression([
-                    t.stringLiteral(`${key.toLowerCase()}Query`),
+                    t.stringLiteral(`${key[0].toLowerCase()}${key.slice(1)}Query`),
                     t.identifier("request"),
                 ]),
                 t.arrowFunctionExpression(
@@ -84,7 +84,7 @@ const generateAST =  (input: InputType) => {
                             t.callExpression(
                                 t.memberExpression(
                                     t.identifier("queryService"),
-                                    t.identifier(key.toLowerCase())
+                                    t.identifier(key[0].toLowerCase() + key.slice(1))
                                 ),
                                 [t.identifier("request")]
                             )
@@ -104,7 +104,7 @@ const generateAST =  (input: InputType) => {
     // Define the type annotation for the parameters: UsePoolsQuery<TData>
     const paramTypeAnnotation = t.tsTypeAnnotation(
         t.tsTypeReference(
-            t.identifier("UsePoolsQuery"),
+            t.identifier(`Use${key}Query`),
             t.tsTypeParameterInstantiation([
                 t.tsTypeReference(t.identifier("TData"))
             ])
@@ -115,7 +115,7 @@ const generateAST =  (input: InputType) => {
     // Attach type arguments to `useQuery` call
     const useQueryCall = functionBody.body[0].argument;
     useQueryCall.typeParameters = t.tsTypeParameterInstantiation([
-        t.tsTypeReference(t.identifier("QueryPoolsResponse")),
+        t.tsTypeReference(t.identifier(responseType)),
         t.tsTypeReference(t.identifier("Error")),
         t.tsTypeReference(t.identifier("TData")),
     ]);
@@ -130,17 +130,6 @@ const generateAST =  (input: InputType) => {
 
     const ast = t.program([interfaceNode, constNode]);
     return ast
-    // return generate(ast, { /* options */ }).code;
 }
 
-// const param = {
-//     "Pools": {
-//         "requestType": "QueryPoolsRequest",
-//         "responseType": "QueryPoolsResponse",
-//     }
-//   }
-
-// let ast = generateAST(param)
-// let code = generate(ast, {}).code;
-// console.log(code)
 export default generateAST
